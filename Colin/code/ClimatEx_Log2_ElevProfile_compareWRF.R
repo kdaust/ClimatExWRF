@@ -57,7 +57,7 @@ region5 <- ext(c(lon1, lon1+7.125, 57, 58))
 ## Key Map
 #######################
 
-png(filename=paste("results\\ClimatExEval.Log2.KeyMap.png",sep="."), type="cairo", units="in", width=6.5, height=5.8, pointsize=10, res=600)
+png(filename=paste("Colin/results/ClimatExEval.Log2.KeyMap.png",sep="."), type="cairo", units="in", width=6.5, height=5.8, pointsize=10, res=600)
 par(mar=c(0,0,0,0))
 legend.args=list(text='Elevation (m)', side=2, font=2, line=0.5, cex=0.8)
 X <- dem.bc

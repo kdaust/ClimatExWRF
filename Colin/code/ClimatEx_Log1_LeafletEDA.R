@@ -31,8 +31,19 @@ monthcodes <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"
 monthdays <- c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 365.25)
 month.abb.lowercase <- c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
 
-e <- 1
-m <- 7
+e <- 2
+m <- 1
+
+#PRISM DEM
+dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/PRISM_dem/", sep="")
+dem.bc <- rast(paste(dir, "PRISM_dem.asc", sep=""))
+
+# load the BC PRISM  data for the variable
+dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/", sep="")
+file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
+prism.bc <- rast(paste(dir, file, sep=""))
+if(elements[e]=="Pr") values(prism.bc) <- log2(values(prism.bc))
+values(prism.bc)[!is.finite(values(prism.bc))] <- NA
 
 # load the source STATION data for the BC prism
 dir <- "//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/"
@@ -46,17 +57,6 @@ stn.data <- stn.info[,get(month.abb[m])]
 stn.data <- if(elements[e]=="Pr") log2(stn.data) else stn.data/10
 stn.info <- stn.info[is.finite(stn.data),]
 stn.data <- stn.data[is.finite(stn.data)]
-
-#PRISM DEM
-dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/PRISM_dem/", sep="")
-dem.bc <- rast(paste(dir, "PRISM_dem.asc", sep=""))
-
-# load the BC PRISM  data for the variable
-dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/", sep="")
-file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
-prism.bc <- rast(paste(dir, file, sep=""))
-if(elements[e]=="Pr") values(prism.bc) <- log2(values(prism.bc))
-values(prism.bc)[!is.finite(values(prism.bc))] <- NA
 
 # load the ClimatEx WRF data for the variable
 dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
@@ -75,7 +75,7 @@ wrfconus2 <- prep(wrfconus2, studyarea=prism.bc, element=elements[e])
 dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CCRN/monthly_clim_regridded/"
 dem.usask <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
 wrfusask <- rast(paste0(dir, paste(c("tmin", "tmax", "prec")[e], monthcodes[m], "regrid.nc", sep="_")))
-wrfusask <- wrfusask*monthdays[m]
+wrfusask <- if(e != 3) wrfusask else wrfusask*monthdays[m]
 wrfusask <- prep(wrfusask, studyarea=prism.bc, element=elements[e])
 
 # color scheme
