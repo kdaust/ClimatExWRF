@@ -9,6 +9,7 @@ library(data.table)
 library(sf)
 library(scales)
 library(RColorBrewer)
+library(bcmaps)
 library(plotrix) # for Taylor plots
 
 source("Colin/code/util.R")
@@ -17,6 +18,7 @@ element.names <- c("Tmin", "Tmax", "Precipitation")
 #######################
 ## Common data
 #######################
+
 
 #PRISM DEM
 dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/PRISM_dem/", sep="")
@@ -38,43 +40,17 @@ oceanmask <- st_sf(geometry = oceanmask_geom, crs = st_crs(maskpoly))
 oceanmask <- vect(oceanmask)
 
 # define the regions
-regions <- c("SW", "SE", "CI", "NI")
-lon1 <- -129.5; lat1 = 48
+regions <- c("SW", "SE", "NI")
+lon1 <- -129.5; lat1 = 48.2
 region1 <- ext(c(lon1, lon1+7.5, lat1, lat1+3))
-lon1 <- -121; lat1 = 48.9
-region2 <- ext(c(lon1, lon1+7, lat1, lat1+3))
-lon1 <- -128; lat1 = 52.5
-region3 <- ext(c(lon1, lon1+10, lat1, lat1+3))
-lon1 <- -132; lat1 = 56
-region4 <- ext(c(lon1, lon1+12, lat1, lat1+4))
+lon1 <- -121.5; lat1 = 48.9
+region2 <- ext(c(lon1, lon1+7.5, lat1, lat1+5))
+lon1 <- -134; lat1 = 54.5
+region3 <- ext(c(lon1, lon1+14, lat1, lat1+5.5))
 
+bc <- vect(bc_bound())
+bc <- project(bc, dem.bc)
 
-#######################
-## Key Map
-#######################
-
-png(filename=paste("Colin/results/ClimatExEval.Log5.KeyMap.png",sep="."), type="cairo", units="in", width=6.5, height=5.8, pointsize=10, res=600)
-par(mar=c(0,0,0,0))
-legend.args=list(text='Elevation (m)', side=2, font=2, line=0.5, cex=0.8)
-X <- dem.bc
-lim <- quantile(values(X), 0.99)
-values(X)[which(values(X)>lim)] <- lim
-# plot(hill, col=alpha(grey(0:100/100), 1), maxpixels=ncell(hill), legend=F)
-plot(X, col=terrain.colors(99), xaxt="n", yaxt="n")
-plot(crop(hill.bc,X), add=T, col=alpha(grey(0:100/100), 0.5), legend=F, legend.mar=0)
-plot(oceanmask, add=T, col="white", border=F)
-plot(stn, add=T, pch=16, col="gray30", cex=0.8, lwd=0.5)
-# mtext(paste("(a)", sep=""), side=1, line=-1.5, adj=0.005, font=2, cex=0.8)
-
-for(i in 1:4){
-  region <- get(paste("region", i, sep=""))
-  plot(region, add=T)
-  text(ext(region)[1], ext(region)[4]-0.25, regions[i], font=2, pos=4, offset=0.1)
-}
-l <- ext(X)
-rect(l[1], l[3], l[2], l[4], border = "black", lwd = 1)
-
-dev.off()
 
 
 #######################
@@ -84,15 +60,23 @@ dev.off()
 datasets <- c("prism", "wrfclimatex", "wrfusask", "wrfconus2")
 datasets.names <- c("PRISM", "WRF-ClimatEx", "WRF-USask", "WRF-CONUSII")
 
-png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots.png",sep="."), type="cairo", units="in", width=9, height=6.25, pointsize=10, res=600)
+monthpair <- c(4,10)
+monthpair <- c(1,7)
+
+png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots", paste(month.abb[monthpair], collapse = ""), ".png",sep="."), type="cairo", units="in", width=9, height=6.25, pointsize=10, res=600)
 par(mfrow=c(2,3), mar=c(0,0,0,0), mgp=c(2,0.25, 0), tck=-0.01)
 m=1
-for(m in c(1,7)){
+for(m in monthpair){
   monthcode = monthcodes[m]
   
   e=1
   for(e in 1:3){
     element = elements[e]
+    
+    # load the BC PRISM  data for the variable
+    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
+    file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
+    prism.bc <- rast(paste(dir, file, sep=""))
     
     # load the source STATION data for the BC prism
     dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
@@ -106,11 +90,6 @@ for(m in c(1,7)){
     stn.data <- if(e==3) log2(stn.data) else stn.data/10
     stn.info <- stn.info[is.finite(stn.data),]
     stn.data <- stn.data[is.finite(stn.data)]
-    
-    # load the BC PRISM  data for the variable
-    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
-    file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
-    prism.bc <- rast(paste(dir, file, sep=""))
     
     # load the ClimatEx WRF data for the variable
     dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
@@ -135,6 +114,36 @@ for(m in c(1,7)){
     wrfconus2.bc <- crop(wrfconus2.bc, prism.bc)
     
     
+    ###########################################################
+    ## for Tmin, plot a key map
+    #######################
+    
+    if(e==1 & m==1){
+      png(filename=paste("Colin/results/ClimatExEval.Log5.KeyMap.png",sep="."), type="cairo", units="in", width=6.5, height=5.8, pointsize=10, res=600)
+      par(mar=c(0,0,0,0))
+      legend.args=list(text='Elevation (m)', side=2, font=2, line=0.5, cex=0.8)
+      X <- dem.bc
+      lim <- quantile(values(X), 0.99)
+      values(X)[which(values(X)>lim)] <- lim
+      # plot(hill, col=alpha(grey(0:100/100), 1), maxpixels=ncell(hill), legend=F)
+      plot(X, col=terrain.colors(99), xaxt="n", yaxt="n")
+      plot(crop(hill.bc,X), add=T, col=alpha(grey(0:100/100), 0.5), legend=F, legend.mar=0)
+      plot(oceanmask, add=T, col="white", border=F)
+      plot(bc, add=T)
+      plot(crop(stn, bc), add=T, pch=16, col="gray30", cex=0.8, lwd=0.5)
+      # mtext(paste("(a)", sep=""), side=1, line=-1.5, adj=0.005, font=2, cex=0.8)
+      
+      for(i in 1:length(regions)){
+        region <- get(paste("region", i, sep=""))
+        plot(region, add=T, lty=2, lwd=2)
+        text(ext(region)[1], ext(region)[4]-0.25, regions[i], font=2, pos=4, offset=0.1)
+      }
+      l <- ext(X)
+      rect(l[1], l[3], l[2], l[4], border = "black", lwd = 1)
+      
+      dev.off()
+    }
+    
     #################################
     ## Taylor plots
     #################################
@@ -144,24 +153,28 @@ for(m in c(1,7)){
                    col = "black", pch = 1, cex = 1, normalize = TRUE, xlab="",
                    sd.arcs = TRUE, grad.corr.lines = TRUE, pos.cor = TRUE)
     
+    colScheme <- c("black", "dodgerblue", "yellow", "red")
+    
     # Add a legend
     legend("topright",
            legend = datasets.names,
-           fill = 1:4,      # colored boxes
-           border = "black",
+           title="Datasets",
+           fill = colScheme,      # colored boxes
+           border = NULL,
            bty = "n",
            inset = c(0,-0.07))
     
     # second column: black shapes
     legend("topright",
            legend = regions,
+           title="Regions",
            bg = "white",
-           pch = 14 + 1:4,  # shapes
+           pch = 21:24,  # shapes
            pt.cex = 1.5,
            bty = "n",
            inset = c(0.4,-0.07))   # shift to the left so they appear in second column
     
-    for(i in 1:4){
+    for(i in 1:length(regions)){
       studyarea <- get(paste("region", i, sep=""))  
       caseStudy <- regions[i]
       
@@ -189,10 +202,11 @@ for(m in c(1,7)){
         assign(paste("stn", dataset, elements[e], monthcodes[m], sep="."), stn.temp)
         assign(paste("error", dataset, elements[e], monthcodes[m], sep="."), stn.temp - stn.values)
         # Add points on the Taylor diagram
-        taylor.diagram(ref = stn.values, model = stn.temp, add = TRUE,
-                       col = d, pch = (14+1:4)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
+        # taylor.diagram(ref = stn.values, model = stn.temp, add = TRUE,
+        #                col = d, pch = (14+1:4)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
+        taylor.diagram.filled(ref = stn.values, model = stn.temp, add = TRUE,
+                              bg = colScheme[d], pch = (21:24)[i], cex = 1.5, normalize = TRUE)
       }
-      
       
       # print(paste("region", i))
     }
