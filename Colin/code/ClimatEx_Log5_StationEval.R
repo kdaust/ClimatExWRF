@@ -63,7 +63,7 @@ datasets.names <- c("PRISM", "WRF-ClimatEx", "WRF-USask", "WRF-CONUSII")
 monthpair <- c(4,10)
 monthpair <- c(1,7)
 
-png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots", paste(month.abb[monthpair], collapse = ""), ".png",sep="."), type="cairo", units="in", width=9, height=6.25, pointsize=10, res=600)
+png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots", paste(month.abb[monthpair], collapse = ""), "png",sep="."), type="cairo", units="in", width=9, height=6.25, pointsize=10, res=600)
 par(mfrow=c(2,3), mar=c(0,0,0,0), mgp=c(2,0.25, 0), tck=-0.01)
 m=1
 for(m in monthpair){
@@ -169,7 +169,7 @@ for(m in monthpair){
            legend = regions,
            title="Regions",
            bg = "white",
-           pch = 21:24,  # shapes
+           pch = c(21,22,24),  # shapes
            pt.cex = 1.5,
            bty = "n",
            inset = c(0.4,-0.07))   # shift to the left so they appear in second column
@@ -203,9 +203,9 @@ for(m in monthpair){
         assign(paste("error", dataset, elements[e], monthcodes[m], sep="."), stn.temp - stn.values)
         # Add points on the Taylor diagram
         # taylor.diagram(ref = stn.values, model = stn.temp, add = TRUE,
-        #                col = d, pch = (14+1:4)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
+        #                col = colScheme[d], pch = c(16,15,17)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
         taylor.diagram.filled(ref = stn.values, model = stn.temp, add = TRUE,
-                              bg = colScheme[d], pch = (21:24)[i], cex = 1.5, normalize = TRUE)
+                              bg = colScheme[d], pch = c(21,22,24)[i], cex = 1.5, normalize = TRUE)
       }
       
       # print(paste("region", i))
