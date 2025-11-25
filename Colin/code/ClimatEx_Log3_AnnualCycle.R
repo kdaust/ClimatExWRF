@@ -33,7 +33,7 @@ for(color in colors){
       
       studyarea <- ext(wrfclimatex)-c(7, 5, 4, 3)
       
-      png(filename=paste("results\\ClimatExEval.AnnualCycle", element, projection,color, "png",sep="."), type="cairo", units="in", width=if(projection == "latlon") 6.5 else 5.5, height=7, pointsize=12, res=600)
+      png(filename=paste("Colin/results/ClimatExEval.AnnualCycle", element, projection,color, "png",sep="."), type="cairo", units="in", width=if(projection == "latlon") 6.5 else 5.5, height=7, pointsize=12, res=600)
       
       mat <- matrix(c(2,3,4,5,13,1,1,6,12,1,1,7,11,10,9,8),4, byrow=T)   #define the plotting order
       layout(mat, widths=c(1,1,1,1), heights=c(1,1,1,1))   #set up the multipanel plot

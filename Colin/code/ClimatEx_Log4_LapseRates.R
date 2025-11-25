@@ -56,7 +56,7 @@ dem.wrfconus2 <- project(dem.wrfconus2, dem.prism) # project reduced resolution 
 datasets <- c("prism", "wrfclimatex", "wrfusask", "wrfconus2")
 
 dataset <- "wrfclimatex"
-for(dataset in datasets){
+for(dataset in datasets[-1]){
   #============================================
   ## smoothed and residual elevation
   # latFactor <- cos(mean(extent(dem.wrfhim)[3:4])*(pi/180)) # latitudinal correction for longitudinal length of cell
@@ -68,18 +68,12 @@ for(dataset in datasets){
   dem.o <- crop(get(paste("dem", dataset, sep=".")), dem.d)
   dem.r <- dem.o-dem.d
   
-  # par(mfrow=c(1,1))
-  # plot(dem.r)
-  
-  stn.el.o <- stn.info$Elevation
-  
-  
   e=3
-  # for(e in 1:2){
+  # for(e in 1:3){
     element = elements[e]
     
     m=1
-    for(m in c(1,7)){
+    for(m in c(1,4,7,10)){
       monthcode = monthcodes[m]
       
       # load the source STATION data for the BC prism
@@ -99,11 +93,13 @@ for(dataset in datasets){
       if(e ==3) prism <- prism/monthdays[m]
       
       # load the ClimatEx WRF data for the variable
-      dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
+      if(dataset=="wrfclimatex"){
+        dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
       wrfclimatex <- rast(paste0(dir, paste("ClimatExWRF_climatology_", elements[e], "_latlon.tif", sep="")))[[m]]
       wrfclimatex <- if(e ==3) wrfclimatex/monthdays[m] else wrfclimatex - 273.15
       wrfclimatex <- project(wrfclimatex, prism)
- 
+      }
+      
       # load the USask WRF data for the variable
       if(dataset=="wrfusask"){
         dir <- "//objectstore2.nrs.bcgov/ffec/Climatologies/USask_WRF/monthly_clim_regridded/"
@@ -142,7 +138,7 @@ for(dataset in datasets){
       ## Scatterplots for distinct regions
       
       
-      png(filename=paste("results\\ClimatExEval.LapseRate", element, monthcode,dataset, "png",sep="."), type="cairo", units="in", width=6, height=8, pointsize=10, res=600)
+      png(filename=paste("Colin/results/ClimatExEval.LapseRate", element, monthcode,dataset, "png",sep="."), type="cairo", units="in", width=6, height=8, pointsize=10, res=600)
       mat <- rbind(c(rep(1,3),2), c(rep(1,3),3), c(rep(1,3),4), matrix(c(5:16),3, byrow=F))  #define the plotting order
       layout(mat, widths=c(1,1,1,1), heights=c(1,1,1,1,1,1))   #set up the multipanel plot
       

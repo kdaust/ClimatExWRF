@@ -47,14 +47,9 @@ projection = "latlon"
   element = elements[3]
   for(element in elements[1:3]){
     
-    if(projection == "latlon"){
       file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CONUSII/conus2_", element, "_latlon.nc")
       wrf <- rast(file)
-    } else {
-      file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_2000_2023.nc")
-      wrf <- rast(file)
-    }
-    
+
     # exclude lat and lon fields
     if(projection=="lambert") wrf <- wrf[[-which(names(wrf) %in% c("XLONG", "XLAT"))]]
     

@@ -5,24 +5,42 @@ library(terra)
 
 # --------------------------
 # Initial QC on data gaps
+wrf_pr <- rast("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ppt_monthly_1990_2024.nc")
+wrf_tn <- rast("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/tmin_monthly_1990_2024.nc")
+wrf_tx <- rast("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/tmax_monthly_1990_2024.nc")
 
-wrf_pr <- rast("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ppt_latlon_2000_2023.nc")
-wrf_tn <- rast("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/tmin_latlon_2000_2023.nc")
-wrf_tx <- rast("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/tmax_latlon_2000_2023.nc")
+plot(wrf_pr[[3]])
+plot(wrf_tn[[3]])
+plot(wrf_tx[[3]])
 
-plot(wrf_tx[[202]])
 names(wrf_pr)
 names(wrf_tn)
 names(wrf_tx)
-time(wrf_tx)
+time(wrf_pr)
+
+month_pr <- substr(sub("T2_Times=", "", names(wrf_pr)), 5, 6)
+year_pr <- substr(sub("T2_Times=", "", names(wrf_pr)), 1, 4)
+paste(year_pr, month_pr, sep="_")
+
+month_tn <- substr(sub("T2_Times=", "", names(wrf_tn)), 5, 6)
+year_tn <- substr(sub("T2_Times=", "", names(wrf_tn)), 1, 4)
+paste(year_tn, month_tn, sep="_")
 
 month_tx <- substr(sub("T2_Times=", "", names(wrf_tx)), 5, 6)
 year_tx <- substr(sub("T2_Times=", "", names(wrf_tx)), 1, 4)
 paste(year_tx, month_tx, sep="_")
 
-month_tn <- substr(sub("T2_Times=", "", names(wrf_tn)), 5, 6)
-year_tn <- substr(sub("T2_Times=", "", names(wrf_tn)), 1, 4)
-paste(year_tn, month_tn, sep="_")
+library(ncdf4)
+nc_pr <- nc_open("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ppt_monthly_1990_2024.nc")
+nc_pr$dim$time$vals  # check if "Time" exists
+nc_close(nc_pr)
+
+library(ncdf4)
+nc_tx <- nc_open("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/tmax_monthly_1990_2024.nc")
+nc_tx$dim$Times$vals  # check if "Time" exists
+nc_close(nc_tx)
+
+
 
 # missing: 
 # 2005_03 through 2005_07
@@ -45,14 +63,15 @@ projections <- c("lambert", "latlon")
 projection = "lambert"
 for(projection in projections){
   
-  element = elements[3]
-  for(element in elements[1:3]){
-  
+  e=3
+  # for(e in 1:3){
+    element = elements[e]
+    
   if(projection == "latlon"){
-    file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_latlon_2000_2023.nc")
+    file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_latlon_1990_2024.nc")
     wrf <- rast(file)
   } else {
-    file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_2000_2023.nc")
+    file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_monthly_1990_2024.nc")
     wrf <- rast(file)
   }
   
@@ -63,23 +82,17 @@ for(projection in projections){
   
   library(ncdf4)
   nc <- nc_open(file)
-  time_vals <- ncvar_get(nc, "time")
-  time_units <- ncatt_get(nc, "time", "units")$value
+  time_vals <- ncvar_get(nc, if(e==3) "time" else "Times")
   nc_close(nc)
-  origin <- sub(".*since ", "", time_units)
-  if(e==3){
-    names(wrf) <- paste(substr(time_vals, 1, 4), substr(time_vals, 5,6), sep="-")
-  } else {
-    time_seq <- as.POSIXct(time_vals * 86400, origin = origin, tz = "UTC")  # adjust multiplier if units are days
-    names(wrf) <- substr(time_seq, 1, 7)
-  }
-  
+  names(wrf) <- paste(substr(time_vals, 1, 4), substr(time_vals, 5,6), sep="-")
+
   # exclude anomalous months
-  wrf <- wrf[[-which(names(wrf)%in%c("2017-10", "2018-04"))]] # there were temperature outliers over ocean in these months; exclude for all
-  if(e==3) wrf <- wrf[[-which(names(wrf)%in%c("2005-04", "2005-09", "2006-03"))]] # missing precipitation data
-  
-  # exclude last month (only day 1 for that month)
-  if("2023-10" %in% names(wrf)) wrf <- wrf[[-which(names(wrf) == "2023-10")]]
+  if(e==1) wrf <- wrf[[-which(names(wrf)%in%c("2017-10", "2018-04"))]] # there were temperature outliers over ocean in these months; exclude for all
+  if(e!=3) wrf <- wrf[[-which(names(wrf)%in%c("2005-09"))]] # corrupted
+  if(e==3) wrf <- wrf[[-which(names(wrf)%in%c("1997-06", "1997-07", "1998-07", "1994-08"))]] # corrupted
+
+  # reduce to 1991-2020
+  wrf <- wrf[[which(as.numeric(substr(names(wrf), 1, 4))%in% 1991:2020)]] # corrupted
   
   #index of wrf months and years
   wrf_month <- substr(names(wrf), 6, 7)
@@ -102,10 +115,9 @@ for(projection in projections){
   X <- c(X, X_annual)
   names(X)[13] <- paste(min(wrf_year), max(wrf_year), "ann", sep="_")
   
-  
   writeRaster(X, paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ClimatExWRF_climatology_", element, "_", projection, ".tif"), overwrite=TRUE)
   print(element)
-  }
+  # }
   
   print(projection)
 }
@@ -121,10 +133,10 @@ for(m in 1:13){
 png(filename=paste("results\\ClimatExEval.T2mOverOcean", "png",sep="."), type="cairo", units="in", width=6.5, height=4, pointsize=10, res=600)
 par(mfrow=c(2,1), mgp=c(1.75, 0.25, 0))
 for(e in 1:2){
-  element==elements[e]
-  file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_2000_2023.nc")
+  element=elements[e]
+  file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_monthly_1990_2024.nc")
   wrf <- rast(file)
-  
+
   if(e==1){
     par(mar=c(0,3,2,0.1))
   } else {
@@ -132,37 +144,128 @@ for(e in 1:2){
   }
   point <- matrix(c(100,500), 1,2)
   ts <- as.vector(unlist(extract(wrf, point)))[-c(1,2)]-273.15
+  ts[ts>1000] <- NA
   location <- as.vector(unlist(extract(wrf, point)[c(1,2)]))
   plot(ts, type="l", xaxt="n", ylab=element.names[e], tck=-0.01, xlab="")
   if(e==1) title(main=paste0("Temperature over ocean at (", round(location[1]), "E, ", round(location[2]), "N)"))
-  if(e==2) axis(1, at=seq(10, length(time_seq), 12), label=2000:2023, tck=-0.01)
+  if(e==2) axis(1, at=seq(10, length(wrf_year), 12), label=1990:2024, tck=-0.01)
   points(ts, bg=c(1,0,0,0,0,0,2,0,0,0,0,0), pch=21, cex=c(1,0,0,0,0,0,1,0,0,0,0,0))
   if(e==1) legend("topleft", legend=c("October", "April"), pch=21, pt.bg=c(1,2), bty="n")
 }
 dev.off()
 
+# --------------------------
+# map the anomalies for suspect months
+
+element="tmin"
+file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_monthly_1990_2024.nc")
+wrf <- rast(file)
+
+X.mean <- rast(paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ClimatExWRF_climatology_", element, "_lambert.tif"))
+
+lim <- 8
+breaks <- seq(0-lim,lim,lim/50)
+ColScheme <- colorRampPalette(rev(c(brewer.pal(11, "RdBu")[1:5], rep("white", 1), brewer.pal(11, "RdBu")[7:11])))(length(breaks)-1)
+
+par(mfrow=c(3,4), mar=c(0,0,0,0))
+for(m in c(7:12, 1:6)){
+year <- c(rep(2018, 6), rep(2017, 6))[m]
+yearmonth <- paste0(year, monthcodes[m]) 
+X <- wrf[[grep(yearmonth, names(wrf))]]
+X.anom <- X-X.mean[[m]]
+X.anom[X.anom>lim] <- lim
+X.anom[X.anom < 0-lim] <- 0-lim
+plot(X.anom, col=ColScheme, breaks=breaks, type="continuous", axes=F, main=paste(month.abb[m], year))
+}
+
+
 
 # --------------------------
-# visualize missing data
+# isolate corrupted september tmax values
 
-e=3
+element="tmin"
+file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_monthly_1990_2024.nc")
+wrf <- rast(file)
+
+
+
+
+
+
+# --------------------------
+# visualize missing/anomalous data
+
+element="tmin"
+projection="lambert"
+
+e=1
 for(e in 1:3){
-  element==elements[e]
-  png(filename=paste("results\\ClimatExEval.GlobalMean", element,  "png",sep="."), type="cairo", units="in", width=6.5, height=4, pointsize=10, res=600)
+  element=elements[e]
+  
+  file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_monthly_1990_2024.nc")
+  wrf <- rast(file)
+
+  if(projection=="lambert") wrf <- wrf[[-which(names(wrf) %in% c("XLONG", "XLAT"))]]
+  
+  # plot(wrf[[1]])
+  
+  library(ncdf4)
+  nc <- nc_open(file)
+  time_vals <- ncvar_get(nc, if(e==3) "time" else "Times")
+  nc_close(nc)
+  names(wrf) <- paste(substr(time_vals, 1, 4), substr(time_vals, 5,6), sep="-")
+  
+  png(filename=paste("Colin/results/ClimatExEval.GlobalMean", element,  "png",sep="."), type="cairo", units="in", width=6.5, height=4, pointsize=10, res=600)
   
   par(mfrow=c(3,4), mar=c(2,3,2,0), mgp=c(1.75, 0.25, 0))
+  
+  years <- 1989:2024
+  
   for(m in c(10,11,12,1:9)){
     monthcode <- monthcodes[m]
-    x <- rep(NA, 25)
-    y <- rep(NA, 25)
+    x <- rep(NA, length(years))
+    y <- rep(NA, length(years))
     i=0
-    for(year in 1999:2023){
+    for(year in years){
       i=i+1
-      name <- paste(year, monthcode, sep="-")
-      y[i] <- if(name%in%names(wrf)) as.numeric(unlist(global(wrf[[which(names(wrf)==name)]], fun = "mean", na.rm = TRUE))) else 0
+      yearmonth <- paste(year, monthcode, sep="-")
+      y[i] <- if(yearmonth%in%names(wrf)) as.numeric(unlist(global(wrf[[grep(yearmonth, names(wrf))]], fun = "mean", na.rm = TRUE))) else NA
       print(year)
     }
-    plot(1999:2023, y, ylim=c(0, max(y)), main=month.name[m], ylab=element.names[e], xlab="", pch=16, tck=-0.01)
+    plot(years, y, main=month.name[m], ylab=element.names[e], xlab="", pch=16, tck=-0.01)
   }
   dev.off()
+}
+
+# are the corrupted values all the same? 
+par(mfrow=c(1,1))
+yearmonth <- "2005-09"
+X <- wrf[[grep(yearmonth, names(wrf))]]
+plot(X)
+values(X)[which(values(X) < -100)]
+h <- hist(X, plot = FALSE)
+h
+
+# --------------------------
+# map the anomalies for WY2024
+
+element="tmin"
+file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_monthly_1990_2024.nc")
+wrf <- rast(file)
+
+X.mean <- rast(paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ClimatExWRF_climatology_", element, "_lambert.tif"))
+
+lim <- 8
+breaks <- seq(0-lim,lim,lim/50)
+ColScheme <- colorRampPalette(rev(c(brewer.pal(11, "RdBu")[1:5], rep("white", 1), brewer.pal(11, "RdBu")[7:11])))(length(breaks)-1)
+
+par(mfrow=c(3,4), mar=c(0,0,0,0))
+for(m in c(10:12, 1:9)){
+  year <- c(rep(2024, 9), rep(2023, 3))[m]
+  yearmonth <- paste0(year, monthcodes[m]) 
+  X <- wrf[[grep(yearmonth, names(wrf))]]
+  X.anom <- X-X.mean[[m]]
+  X.anom[X.anom>lim] <- lim
+  X.anom[X.anom < 0-lim] <- 0-lim
+  plot(X.anom, col=ColScheme, breaks=breaks, type="continuous", axes=F, main=paste(month.abb[m], year))
 }

@@ -7,9 +7,11 @@ library(data.table)
 library(sf)
 library(scales)
 library(RColorBrewer)
+library(climr)
 
 monthcodes <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
 month.abb.lowercase <- c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+monthdays <- c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 365.25)
 elements <- c("tmin", "tmax", "pr")
 element.names <- c("Tmin (\u00B0C)", "Tmax (\u00B0C)", "precip. (mm)")
 
@@ -58,7 +60,7 @@ region5 <- ext(c(lon1, lon1+7.125, 57, 58))
 #######################
 
 png(filename=paste("Colin/results/ClimatExEval.Log2.KeyMap.png",sep="."), type="cairo", units="in", width=6.5, height=5.8, pointsize=10, res=600)
-par(mar=c(0,0,0,0))
+par(mar=c(0,0,0,0), mfrow=c(1,1))
 legend.args=list(text='Elevation (m)', side=2, font=2, line=0.5, cex=0.8)
 X <- dem.bc
 lim <- quantile(values(X), 0.99)
@@ -85,11 +87,11 @@ dev.off()
 #######################
 
 e=3
-for(e in 1:2){
+for(e in 1:3){
   element = elements[e]
   
   m=1
-  for(m in c(1,7)){
+  for(m in c(1,4,7,10)){
     monthcode = monthcodes[m]
     
     # load the source STATION data for the BC prism
@@ -207,13 +209,16 @@ for(e in 1:2){
       ColScheme <- colorRampPalette(if(e==3) brewer.pal(9, "YlGnBu") else rev(brewer.pal(11, "RdYlBu")))(length(breaks)-1)
       
       
-      png(filename=paste("results\\ClimatExEval.Log2.ElevProfile", caseStudy, elements[e], monthcodes[m],"png",sep="."), type="cairo", units="in", width=c(6.27, 6.1, 5.9, 5.05, 5.25)[i], height=5.3*5/4, pointsize=10, res=600)
+      png(filename=paste("Colin/results/ClimatExEval.Log2.ElevProfile", caseStudy, elements[e], monthcodes[m],"png",sep="."), type="cairo", units="in", width=c(6.27, 6.1, 5.9, 5.05, 5.25)[i], height=5.3*5/4, pointsize=10, res=600)
       mat <- matrix(1:10,5, byrow=T)   #define the plotting order
       layout(mat, widths=c(1,0.125), heights=c(1, 1,1,1))   #set up the multipanel plot
       par(mar=c(0.5,0.5,0.5,0))
       
       ## elevation plot
-      
+      range.terrain <- range(values(X), na.rm=T)
+      breaks.terrain <- seq(range.terrain[1], range.terrain[2], diff(range.terrain)/99)
+      ColScheme.terrain <- terrain.colors(length(breaks.terrain)-1)
+
       lim <- quantile(values(X), 0.99, na.rm=T)
       values(X)[which(values(X)>lim)] <- lim
       plot(X, col=terrain.colors(99), mar = NA, axes = FALSE, frame = TRUE,  legend=F, xaxt="n", yaxt="n")
@@ -223,15 +228,14 @@ for(e in 1:2){
       mtext(paste("(",letters[1],")", sep=""), line=-1.5, adj=0.005, side=3, cex=1)
       box()
       
-      ## Terrain legend
-      xl <- 0.3; yb <- 0.1; xr <- 0.5; yt <- 0.9
       plot(1, type="n", xlim=c(0,1), ylim=c(0,1), xaxt="n", yaxt="n", xlab="", ylab="", bty="n")
-      rect(xl,  head(seq(yb,yt,(yt-yb)/length(terrain.colors(99))),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(terrain.colors(99))),-1),  border=NA, col=terrain.colors(99))
-      rect(xl,  yb,  xr,  yt)
-      labels=round(quantile(values(X), c(0, 0.25,0.5,0.75, 1), na.rm=T),0)
-      text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.9,font=1, offset=0.1)
-      text(xl-0.15, mean(c(yb,yt))-0.04, paste("Elevation (m)"), srt=90, pos=3, cex=1.2, font=2)
-      
+      legend_ramp(
+        title = "Elevation (m)",
+        ColScheme = ColScheme.terrain,
+        breaks = breaks.terrain,
+        pos=c(0.3, 0.5, 0.05, 0.95),
+        title.height = 6
+      )
       
       ## climate plots
       
@@ -254,15 +258,17 @@ for(e in 1:2){
         }
         box()
         
-        ## legend
         xl <- 0.3; yb <- 0.1; xr <- 0.5; yt <- 0.9
         plot(1, type="n", xlim=c(0,1), ylim=c(0,1), xaxt="n", yaxt="n", xlab="", ylab="", bty="n")
-        rect(xl,  head(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  xr,  tail(seq(yb,yt,(yt-yb)/length(ColScheme)),-1),  border=NA, col=ColScheme)
-        rect(xl,  yb,  xr,  yt)
-        labels=round(quantile(breaks, c(0, 0.25,0.5,0.75, 1)),0)
-        text(rep(xr,length(labels)),seq(yb,yt,(yt-yb)/(length(labels)-1)),labels,pos=4,cex=0.9,font=1, offset=0.1)
-        text(xl-0.15, mean(c(yb,yt))-0.04, paste0(month.abb[m], ". ", element.names[e]), srt=90, pos=3, cex=1.2, font=2)
-        
+        legend_ramp(
+          title = paste0(month.abb[m], ". ", element.names[e]),
+          ColScheme = ColScheme,
+          breaks = breaks,
+          pos=c(0.3, 0.5, 0.05, 0.95),
+          log = 2,
+          title.height = 6
+        )
+
       }
       
       ## latitudinal cross section
