@@ -86,7 +86,7 @@ dev.off()
 ## Elevation Profile
 #######################
 
-e=3
+e=2
 for(e in 1:3){
   element = elements[e]
   
@@ -265,7 +265,7 @@ for(e in 1:3){
           ColScheme = ColScheme,
           breaks = breaks,
           pos=c(0.3, 0.5, 0.05, 0.95),
-          log = 2,
+          log = if(e==3) 2 else NULL,
           title.height = 6
         )
 
