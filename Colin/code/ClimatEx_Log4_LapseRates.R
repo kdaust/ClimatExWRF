@@ -56,7 +56,7 @@ dem.wrfconus2 <- project(dem.wrfconus2, dem.prism) # project reduced resolution 
 datasets <- c("prism", "wrfclimatex", "wrfusask", "wrfconus2")
 
 dataset <- "wrfclimatex"
-for(dataset in datasets[-1]){
+# for(dataset in datasets[-1]){
   #============================================
   ## smoothed and residual elevation
   # latFactor <- cos(mean(extent(dem.wrfhim)[3:4])*(pi/180)) # latitudinal correction for longitudinal length of cell
@@ -76,20 +76,11 @@ for(dataset in datasets[-1]){
     for(m in c(1,4,7,10)){
       monthcode = monthcodes[m]
       
-      # load the source STATION data for the BC prism
-      dir <- "//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/"
-      stn.info <- fread(paste(dir, "Stations/",c("Tmin", "Tmax", "Pr")[e],"_uscdn_8110.csv", sep="")) #read in
-      for (i in which(names(stn.info)%in%c(month.abb, "Annual"))) stn.info[get(names(stn.info)[i])==c(-9999), (i):=NA, ] # replace -9999 with NA
-      stn.info <- stn.info[-which(El_Flag=="@"),]
-      stn.data <- stn.info[,get(month.abb[m])]
-      stn.data <- if(e==3) log2(stn.data) else stn.data/10
-      stn.info <- stn.info[is.finite(stn.data),]
-      stn.data <- stn.data[is.finite(stn.data)]
-      
       # load the BC PRISM  data for the variable
-      dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/", sep="")
-      file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
-      prism <- rast(paste(dir, file, sep=""))
+      # dir <- "//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/"
+      dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/1991-2020/"
+      file <- list.files(dir, pattern=paste(c("tasmin", "tasmax", "pr")[e],"_.*.nc", sep=""))
+      prism <- rast(paste(dir, file, sep=""))[[m]]
       if(e ==3) prism <- prism/monthdays[m]
       
       # load the ClimatEx WRF data for the variable
@@ -106,7 +97,7 @@ for(dataset in datasets[-1]){
         wrfusask <- rast(paste0(dir, paste(c("tmin", "tmax", "prec")[e], monthcodes[m], "regrid.nc", sep="_")))
         wrfusask <- project(wrfusask, prism)
       }
-      
+
       # load the CONUS II WRF data for the variable
       if(dataset=="wrfconus2"){
         dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CONUSII/"
@@ -114,12 +105,7 @@ for(dataset in datasets[-1]){
       wrfconus2 <- if(e ==3) wrfconus2/monthdays[m] else wrfconus2 - 273.15
       wrfconus2 <- project(wrfconus2, prism)
       }
-      
-      stn_vect <- vect(stn.info, geom = c("Long", "Lat"), crs = "EPSG:4326")
-      stn_crop <- crop(stn_vect, studyarea)
-      stn_values <- as.data.frame(stn_crop)[,which(names(stn_crop)==month.abb[m])]
-      stn_values <- if(e==3) log2(stn_values) else stn_values/10
-      
+
       #============================================
       ## smoothed and residual climate element
       
@@ -130,9 +116,6 @@ for(dataset in datasets[-1]){
       clim.r <- clim.o-clim.d
       # clim.r <- 100*(2^(clim.o-clim.d)-1)
       # plot(clim.d)
-      
-      stn.clim.o <- if(e ==3) log2(stn_values) else stn_values
-      
       
       #============================================
       ## Scatterplots for distinct regions
@@ -244,5 +227,5 @@ for(dataset in datasets[-1]){
     }
     print(element)
   # }
-  print(dataset)
-}
+  # print(dataset)
+# }

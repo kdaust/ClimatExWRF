@@ -15,8 +15,10 @@ monthcodes <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"
 
 projections <- c("lambert", "latlon")
 
-start <- as.Date("2000-10-01")
-end   <- as.Date("2015-09-30")
+# start <- as.Date("2000-10-01")
+# end   <- as.Date("2015-09-30")
+start <- as.Date("1991-01-01")
+end   <- as.Date("2020-12-31")
 
 projection = "lambert"
 for(projection in projections){
@@ -26,10 +28,10 @@ for(projection in projections){
     element = elements[e]
     
     if(projection == "latlon"){
-      file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_latlon_1990_2024.nc")
+      file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/monthly_", element, "_latlon.nc")
       wrf <- rast(file)
     } else {
-      file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_1990_2024.nc")
+      file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/monthly_", element, ".nc")
       wrf <- rast(file)
     }
     

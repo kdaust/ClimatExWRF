@@ -28,7 +28,7 @@ for(color in colors){
       
       # load the ClimatEx WRF data for the variable
       dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
-      wrfclimatex <- rast(paste0(dir, paste("ClimatExWRF_climatology_", c("tmin", "tmax", "pr")[e], "_", projection, ".tif", sep="")))
+      wrfclimatex <- rast(paste0(dir, paste("ClimatExWRF_climatology_1991_2020_", c("tmin", "tmax", "pr")[e], "_", projection, ".tif", sep="")))
       if(e != 3) wrfclimatex <- wrfclimatex - 273.15
       
       studyarea <- ext(wrfclimatex)-c(7, 5, 4, 3)

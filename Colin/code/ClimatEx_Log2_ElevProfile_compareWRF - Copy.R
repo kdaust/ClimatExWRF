@@ -24,8 +24,7 @@ m <- 7
 #######################
 
 #PRISM DEM
-# dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/PRISM_dem/", sep="")
-dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/PRISM_dem/", sep="")
+dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/PRISM_dem/", sep="")
 dem.bc <- rast(paste(dir, "PRISM_dem.asc", sep=""))
 
 slope.bc <- terrain(dem.bc, v = "slope", unit = "radians")   # or unit = "degrees" if preferred
@@ -87,7 +86,7 @@ dev.off()
 ## Elevation Profile
 #######################
 
-e=3
+e=2
 for(e in 1:3){
   element = elements[e]
   
@@ -97,7 +96,6 @@ for(e in 1:3){
     
     # load the source STATION data for the BC prism
     dir <- "//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/"
-    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/"
     stn.info <- fread(paste(dir, "Stations/",c("Tmin", "Tmax", "Pr")[e],"_uscdn_8110.csv", sep="")) #read in
     for (i in which(names(stn.info)%in%c(month.abb, "Annual"))) stn.info[get(names(stn.info)[i])==c(-9999), (i):=NA, ] # replace -9999 with NA
     stn.info <- stn.info[-which(El_Flag=="@"),]
@@ -107,19 +105,20 @@ for(e in 1:3){
     stn.data <- stn.data[is.finite(stn.data)]
     
     # load the BC PRISM  data for the variable
+    dir <- paste("//objectstore2.nrs.bcgov/ffec/Climatologies/PRISM_BC/", sep="")
     file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
     prism.bc <- rast(paste(dir, file, sep=""))
 
     # load the ClimatEx WRF data for the variable
     dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
-    wrfclimatex.bc <- rast(paste0(dir, paste("ClimatExWRF_climatology_WY2001_WY2015_", c("tmin", "tmax", "pr")[e], "_latlon.tif", sep="")))[[m]]
+    wrfclimatex.bc <- rast(paste0(dir, paste("ClimatExWRF_climatology_", c("tmin", "tmax", "pr")[e], "_latlon.tif", sep="")))[[m]]
     if(e != 3) wrfclimatex.bc <- wrfclimatex.bc - 273.15
     wrfclimatex.bc <- crop(wrfclimatex.bc, prism.bc)
     dem.wrfclimatex <- rast(paste0(dir, "HGT_latlon.nc"))
     dem.wrfclimatex <- crop(dem.wrfclimatex, prism.bc)
     
     # load the USask WRF data for the variable
-    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CCRN/monthly_clim_regridded/"
+    dir <- "//objectstore2.nrs.bcgov/ffec/Climatologies/USask_WRF/monthly_clim_regridded/"
     dem.usask <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
     wrfusask.bc <- rast(paste0(dir, paste(c("tmin", "tmax", "prec")[e], monthcodes[m], "regrid.nc", sep="_")))
     wrfusask.bc <- crop(wrfusask.bc, prism.bc)
@@ -128,7 +127,7 @@ for(e in 1:3){
     # load the conus2 WRF data for the variable
     dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CONUSII/"
     # dem.conus2 <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
-    wrfconus2.bc <- rast(paste0(dir, paste("conus2_climatology_WY2001_WY2015_", element, "_latlon.tif", sep="")))[[m]]
+    wrfconus2.bc <- rast(paste0(dir, paste("conus2_climatology_", element, "_latlon.tif", sep="")))[[m]]
     if(e != 3) wrfconus2.bc <- wrfconus2.bc - 273.15
     wrfconus2.bc <- crop(wrfconus2.bc, prism.bc)
 
@@ -266,7 +265,7 @@ for(e in 1:3){
           ColScheme = ColScheme,
           breaks = breaks,
           pos=c(0.3, 0.5, 0.05, 0.95),
-          log = 2,
+          log = if(e==3) 2 else NULL,
           title.height = 6
         )
 

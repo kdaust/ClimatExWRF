@@ -6,6 +6,9 @@ library(data.table)
 library(scales)
 library(RColorBrewer)
 
+monthdays <- c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+monthcodes <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+
 # --------------------------
 # spot check annual cycle over ocean
 
@@ -13,7 +16,7 @@ png(filename=paste("Colin/results/ClimatExEval.T2mOverOcean", "png",sep="."), ty
 par(mfrow=c(3,1), mgp=c(1.75, 0.25, 0))
 for(e in 1:2){
   element=elements[e]
-  file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_1990_2024.nc")
+  file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/monthly_", element, ".nc")
   wrf <- rast(file)
   
   # pick a locaiton in the pacific ocean
@@ -67,10 +70,10 @@ dev.off()
 # map the anomalies for suspect months
 
 element="tmin"
-file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/", element, "_1990_2024.nc")
+file <- paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/monthly_", element, ".nc")
 wrf <- rast(file)
 
-X.mean <- rast(paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ClimatExWRF_climatology_", element, "_lambert.tif"))
+X.mean <- rast(paste0("C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/ClimatExWRF_climatology_1991_2020_", element, "_lambert.tif"))
 
 lim <- 8
 breaks <- seq(0-lim,lim,lim/50)
@@ -84,7 +87,7 @@ for(m in c(7:12, 1:6)){
   X.anom <- X-X.mean[[m]]
   X.anom[X.anom>lim] <- lim
   X.anom[X.anom < 0-lim] <- 0-lim
-  plot(X.anom, col=ColScheme, breaks=breaks, type="continuous", axes=F, main=paste(month.abb[m], year))
+  terra::plot(X.anom, col=ColScheme, breaks=breaks, type="continuous", axes=F, main=paste(element, "-", month.abb[m], year))
 }
 
 
