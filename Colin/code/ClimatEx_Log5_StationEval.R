@@ -51,22 +51,21 @@ region3 <- ext(c(lon1, lon1+14, lat1, lat1+5.5))
 bc <- vect(bc_bound())
 bc <- project(bc, dem.bc)
 
-
-
-#######################
-## 
-#######################
-
 datasets <- c("prism", "wrfclimatex", "wrfusask", "wrfconus2")
-datasets.names <- c("PRISM", "WRF-ClimatEx", "WRF-USask", "WRF-CONUSII")
+datasets.names <- c("PRISM", "ClimatEx", "USask", "CONUSII")
 
-monthpair <- c(4,10)
-monthpair <- c(1,7)
 
-png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots", paste(month.abb[monthpair], collapse = ""), ".png",sep="."), type="cairo", units="in", width=9, height=6.25, pointsize=10, res=600)
+
+#######################
+## 2 months for 3 elements
+#######################
+
+months <- c(1,7)
+
+png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots", paste0(month.abb[months], collapse=""), "png",sep="."), type="cairo", units="in", width=9, height=6.25, pointsize=10, res=600)
 par(mfrow=c(2,3), mar=c(0,0,0,0), mgp=c(2,0.25, 0), tck=-0.01)
 m=1
-for(m in monthpair){
+for(m in months){
   monthcode = monthcodes[m]
   
   e=1
@@ -120,7 +119,7 @@ for(m in monthpair){
     
     if(e==1 & m==1){
       png(filename=paste("Colin/results/ClimatExEval.Log5.KeyMap.png",sep="."), type="cairo", units="in", width=6.5, height=5.8, pointsize=10, res=600)
-      par(mar=c(0,0,0,0))
+      par(mar=c(0,0,0,0), mfrow=c(1,1))
       legend.args=list(text='Elevation (m)', side=2, font=2, line=0.5, cex=0.8)
       X <- dem.bc
       lim <- quantile(values(X), 0.99)
@@ -169,10 +168,10 @@ for(m in monthpair){
            legend = regions,
            title="Regions",
            bg = "white",
-           pch = 21:24,  # shapes
+           pch = c(21,22,24),  # shapes
            pt.cex = 1.5,
            bty = "n",
-           inset = c(0.4,-0.07))   # shift to the left so they appear in second column
+           inset = c(0.3,-0.07))   # shift to the left so they appear in second column
     
     for(i in 1:length(regions)){
       studyarea <- get(paste("region", i, sep=""))  
@@ -203,9 +202,9 @@ for(m in monthpair){
         assign(paste("error", dataset, elements[e], monthcodes[m], sep="."), stn.temp - stn.values)
         # Add points on the Taylor diagram
         # taylor.diagram(ref = stn.values, model = stn.temp, add = TRUE,
-        #                col = d, pch = (14+1:4)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
+        #                col = colScheme[d], pch = c(16,15,17)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
         taylor.diagram.filled(ref = stn.values, model = stn.temp, add = TRUE,
-                              bg = colScheme[d], pch = (21:24)[i], cex = 1.5, normalize = TRUE)
+                              bg = colScheme[d], pch = c(21,22,24)[i], cex = 1.5, normalize = TRUE)
       }
       
       # print(paste("region", i))
@@ -216,6 +215,393 @@ for(m in monthpair){
 }
 dev.off()
 
+
+
+#######################
+## 4 months for 3 elements
+#######################
+
+months <- c(1,4,7,10)
+
+png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots", "png",sep="."), type="cairo", units="in", width=9, height=12, pointsize=10, res=600)
+par(mfrow=c(4,3), mar=c(0,0,0,0), mgp=c(2,0.25, 0), tck=-0.01)
+m=1
+for(m in months){
+  monthcode = monthcodes[m]
+  
+  e=1
+  for(e in 1:3){
+    element = elements[e]
+    
+    # load the BC PRISM  data for the variable
+    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
+    file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
+    prism.bc <- rast(paste(dir, file, sep=""))
+    
+    # load the source STATION data for the BC prism
+    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
+    stn.info <- fread(paste(dir, "Stations/",c("Tmin", "Tmax", "Pr")[e],"_uscdn_8110.csv", sep="")) #read in
+    for (i in which(names(stn.info)%in%c(month.abb, "Annual"))) stn.info[get(names(stn.info)[i])==c(-9999), (i):=NA, ] # replace -9999 with NA
+    stn.info <- stn.info[-which(El_Flag=="@"),]
+    stn <- vect(stn.info, geom = c("Long", "Lat"), crs = "EPSG:4326")
+    vals <- extract(prism.bc, stn)
+    stn.info <- stn.info[!is.na(vals[, 2])]
+    stn.data <- stn.info[,get(month.abb[m])]
+    stn.data <- if(e==3) log2(stn.data) else stn.data/10
+    stn.info <- stn.info[is.finite(stn.data),]
+    stn.data <- stn.data[is.finite(stn.data)]
+    
+    # load the ClimatEx WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
+    wrfclimatex.bc <- rast(paste0(dir, paste("ClimatExWRF_climatology_", c("tmin", "tmax", "pr")[e], "_latlon.tif", sep="")))[[m]]
+    if(e != 3) wrfclimatex.bc <- wrfclimatex.bc - 273.15
+    wrfclimatex.bc <- crop(wrfclimatex.bc, prism.bc)
+    dem.wrfclimatex <- rast(paste0(dir, "HGT_latlon.nc"))
+    dem.wrfclimatex <- crop(dem.wrfclimatex, prism.bc)
+    
+    # load the USask WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CCRN/monthly_clim_regridded/"
+    dem.usask <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
+    wrfusask.bc <- rast(paste0(dir, paste(c("tmin", "tmax", "prec")[e], monthcodes[m], "regrid.nc", sep="_")))
+    wrfusask.bc <- crop(wrfusask.bc, prism.bc)
+    if(e == 3) wrfusask.bc <- wrfusask.bc*monthdays[m]
+    
+    # load the conus2 WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CONUSII/"
+    # dem.conus2 <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
+    wrfconus2.bc <- rast(paste0(dir, paste("conus2_climatology_", element, "_latlon.tif", sep="")))[[m]]
+    if(e != 3) wrfconus2.bc <- wrfconus2.bc - 273.15
+    wrfconus2.bc <- crop(wrfconus2.bc, prism.bc)
+    
+    #################################
+    ## Taylor plots
+    #################################
+    
+    # Plot PRISM against observations
+    taylor.diagram(ref = 0:5, model = 0:5, main = paste(month.name[m], element.names[e]),
+                   col = "black", pch = 1, cex = 1, normalize = TRUE, xlab="",
+                   sd.arcs = TRUE, grad.corr.lines = TRUE, pos.cor = TRUE)
+    
+    colScheme <- c("black", "dodgerblue", "yellow", "red")
+    
+    # Add a legend
+    legend("topright",
+           legend = datasets.names,
+           title="Datasets",
+           fill = colScheme,      # colored boxes
+           border = NULL,
+           bty = "n",
+           inset = c(0,-0.07))
+    
+    # second column: black shapes
+    legend("topright",
+           legend = regions,
+           title="Regions",
+           bg = "white",
+           pch = c(21,22,24),  # shapes
+           pt.cex = 1.5,
+           bty = "n",
+           inset = c(0.3,-0.07))   # shift to the left so they appear in second column
+    
+    for(i in 1:length(regions)){
+      studyarea <- get(paste("region", i, sep=""))  
+      caseStudy <- regions[i]
+      
+      ## DEM
+      
+      dem <- crop(dem.bc, studyarea)
+      prism <- crop(prism.bc, studyarea)
+      wrfclimatex<- project(wrfclimatex.bc, dem)
+      wrfusask<- project(wrfusask.bc, dem)
+      wrfconus2<- project(wrfconus2.bc, dem)
+      dem.wrf <- project(dem.wrfclimatex, dem)
+      
+      stn.vect <- vect(stn.info, geom = c("Long", "Lat"), crs = "EPSG:4326")
+      stn.crop <- crop(stn.vect, studyarea)
+      stn.values <- as.data.frame(stn.crop)[,which(names(stn.crop)==month.abb[m])]
+      stn.values <- if(e==3) log2(stn.values) else stn.values/10
+      
+      for(dataset in datasets){
+        d=which(datasets==dataset)
+        temp <- get(dataset)
+        # plot(temp)
+        # plot(stn.crop, add=T)
+        stn.temp <- as.vector(unlist(extract(temp, stn.crop)[2]))
+        stn.temp <- if(e==3) log2(stn.temp) else stn.temp
+        assign(paste("stn", dataset, elements[e], monthcodes[m], sep="."), stn.temp)
+        assign(paste("error", dataset, elements[e], monthcodes[m], sep="."), stn.temp - stn.values)
+        # Add points on the Taylor diagram
+        # taylor.diagram(ref = stn.values, model = stn.temp, add = TRUE,
+        #                col = colScheme[d], pch = c(16,15,17)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
+        taylor.diagram.filled(ref = stn.values, model = stn.temp, add = TRUE,
+                              bg = colScheme[d], pch = c(21,22,24)[i], cex = 1.5, normalize = TRUE)
+      }
+      
+      # print(paste("region", i))
+    }
+    print(element)
+  }
+  print(month.abb[m])
+}
+dev.off()
+
+
+
+#######################
+## 12 months for 1 element
+#######################
+
+e=1
+for(e in 1:3){
+  element = elements[e]
+  
+  png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots.12months", element, "png",sep="."), type="cairo", units="in", width=9, height=12, pointsize=10, res=600)
+  par(mfrow=c(4,3), mar=c(0,0,0,0), mgp=c(2,0.25, 0), tck=-0.01)
+  m=1
+  for(m in 1:12){
+    monthcode = monthcodes[m]
+    
+    # load the BC PRISM  data for the variable
+    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
+    file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
+    prism.bc <- rast(paste(dir, file, sep=""))
+    
+    # load the source STATION data for the BC prism
+    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
+    stn.info <- fread(paste(dir, "Stations/",c("Tmin", "Tmax", "Pr")[e],"_uscdn_8110.csv", sep="")) #read in
+    for (i in which(names(stn.info)%in%c(month.abb, "Annual"))) stn.info[get(names(stn.info)[i])==c(-9999), (i):=NA, ] # replace -9999 with NA
+    stn.info <- stn.info[-which(El_Flag=="@"),]
+    stn <- vect(stn.info, geom = c("Long", "Lat"), crs = "EPSG:4326")
+    vals <- extract(prism.bc, stn)
+    stn.info <- stn.info[!is.na(vals[, 2])]
+    stn.data <- stn.info[,get(month.abb[m])]
+    stn.data <- if(e==3) log2(stn.data) else stn.data/10
+    stn.info <- stn.info[is.finite(stn.data),]
+    stn.data <- stn.data[is.finite(stn.data)]
+    
+    # load the ClimatEx WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
+    wrfclimatex.bc <- rast(paste0(dir, paste("ClimatExWRF_climatology_", c("tmin", "tmax", "pr")[e], "_latlon.tif", sep="")))[[m]]
+    if(e != 3) wrfclimatex.bc <- wrfclimatex.bc - 273.15
+    wrfclimatex.bc <- crop(wrfclimatex.bc, prism.bc)
+    dem.wrfclimatex <- rast(paste0(dir, "HGT_latlon.nc"))
+    dem.wrfclimatex <- crop(dem.wrfclimatex, prism.bc)
+    
+    # load the USask WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CCRN/monthly_clim_regridded/"
+    dem.usask <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
+    wrfusask.bc <- rast(paste0(dir, paste(c("tmin", "tmax", "prec")[e], monthcodes[m], "regrid.nc", sep="_")))
+    wrfusask.bc <- crop(wrfusask.bc, prism.bc)
+    if(e == 3) wrfusask.bc <- wrfusask.bc*monthdays[m]
+    
+    # load the conus2 WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CONUSII/"
+    # dem.conus2 <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
+    wrfconus2.bc <- rast(paste0(dir, paste("conus2_climatology_", element, "_latlon.tif", sep="")))[[m]]
+    if(e != 3) wrfconus2.bc <- wrfconus2.bc - 273.15
+    wrfconus2.bc <- crop(wrfconus2.bc, prism.bc)
+    
+    #################################
+    ## Taylor plots
+    #################################
+    
+    # Plot PRISM against observations
+    taylor.diagram(ref = 0:5, model = 0:5, main = paste(month.name[m], element.names[e]),
+                   col = "black", pch = 1, cex = 1, normalize = TRUE, xlab="",
+                   sd.arcs = TRUE, grad.corr.lines = TRUE, pos.cor = TRUE)
+    
+    colScheme <- c("black", "dodgerblue", "yellow", "red")
+    
+    # Add a legend
+    legend("topright",
+           legend = datasets.names,
+           title="Datasets",
+           fill = colScheme,      # colored boxes
+           border = NULL,
+           bty = "n",
+           inset = c(0,-0.07))
+    
+    # second column: black shapes
+    legend("topright",
+           legend = regions,
+           title="Regions",
+           bg = "white",
+           pch = c(21,22,24),  # shapes
+           pt.cex = 1.5,
+           bty = "n",
+           inset = c(0.3,-0.07))   # shift to the left so they appear in second column
+    
+    for(i in 1:length(regions)){
+      studyarea <- get(paste("region", i, sep=""))  
+      caseStudy <- regions[i]
+      
+      ## DEM
+      
+      dem <- crop(dem.bc, studyarea)
+      prism <- crop(prism.bc, studyarea)
+      wrfclimatex<- project(wrfclimatex.bc, dem)
+      wrfusask<- project(wrfusask.bc, dem)
+      wrfconus2<- project(wrfconus2.bc, dem)
+      dem.wrf <- project(dem.wrfclimatex, dem)
+      
+      stn.vect <- vect(stn.info, geom = c("Long", "Lat"), crs = "EPSG:4326")
+      stn.crop <- crop(stn.vect, studyarea)
+      stn.values <- as.data.frame(stn.crop)[,which(names(stn.crop)==month.abb[m])]
+      stn.values <- if(e==3) log2(stn.values) else stn.values/10
+      
+      for(dataset in datasets){
+        d=which(datasets==dataset)
+        temp <- get(dataset)
+        # plot(temp)
+        # plot(stn.crop, add=T)
+        stn.temp <- as.vector(unlist(extract(temp, stn.crop)[2]))
+        stn.temp <- if(e==3) log2(stn.temp) else stn.temp
+        assign(paste("stn", dataset, elements[e], monthcodes[m], sep="."), stn.temp)
+        assign(paste("error", dataset, elements[e], monthcodes[m], sep="."), stn.temp - stn.values)
+        # Add points on the Taylor diagram
+        # taylor.diagram(ref = stn.values, model = stn.temp, add = TRUE,
+        #                col = colScheme[d], pch = c(16,15,17)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
+        taylor.diagram.filled(ref = stn.values, model = stn.temp, add = TRUE,
+                              bg = colScheme[d], pch = c(21,22,24)[i], cex = 1.5, normalize = TRUE)
+      }
+      
+      # print(paste("region", i))
+    }
+    print(month.abb[m])
+  }
+  dev.off()
+  print(element)
+}
+
+#######################
+## 6 months for 1 element
+#######################
+
+months <- seq(1,12, 2)
+
+e=1
+for(e in 1:3){
+  element = elements[e]
+  
+  png(filename=paste("Colin/results/ClimatExEval.Log5.TaylorPlots", element, "png",sep="."), type="cairo", units="in", width=9, height=6.25, pointsize=10, res=600)
+  par(mfrow=c(2,3), mar=c(0,0,0,0), mgp=c(2,0.25, 0), tck=-0.01)
+  m=1
+  for(m in months){
+    monthcode = monthcodes[m]
+    
+    
+    # load the BC PRISM  data for the variable
+    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
+    file <- list.files(dir, pattern=paste(c("tmin", "tmax", "pr")[e],"_.*._",m, ".tif", sep=""))
+    prism.bc <- rast(paste(dir, file, sep=""))
+    
+    # load the source STATION data for the BC prism
+    dir <- paste("C:/Users/CMAHONY/OneDrive - Government of BC/Data/PRISM_BC/", sep="")
+    stn.info <- fread(paste(dir, "Stations/",c("Tmin", "Tmax", "Pr")[e],"_uscdn_8110.csv", sep="")) #read in
+    for (i in which(names(stn.info)%in%c(month.abb, "Annual"))) stn.info[get(names(stn.info)[i])==c(-9999), (i):=NA, ] # replace -9999 with NA
+    stn.info <- stn.info[-which(El_Flag=="@"),]
+    stn <- vect(stn.info, geom = c("Long", "Lat"), crs = "EPSG:4326")
+    vals <- extract(prism.bc, stn)
+    stn.info <- stn.info[!is.na(vals[, 2])]
+    stn.data <- stn.info[,get(month.abb[m])]
+    stn.data <- if(e==3) log2(stn.data) else stn.data/10
+    stn.info <- stn.info[is.finite(stn.data),]
+    stn.data <- stn.data[is.finite(stn.data)]
+    
+    # load the ClimatEx WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_ClimatEx/"
+    wrfclimatex.bc <- rast(paste0(dir, paste("ClimatExWRF_climatology_", c("tmin", "tmax", "pr")[e], "_latlon.tif", sep="")))[[m]]
+    if(e != 3) wrfclimatex.bc <- wrfclimatex.bc - 273.15
+    wrfclimatex.bc <- crop(wrfclimatex.bc, prism.bc)
+    dem.wrfclimatex <- rast(paste0(dir, "HGT_latlon.nc"))
+    dem.wrfclimatex <- crop(dem.wrfclimatex, prism.bc)
+    
+    # load the USask WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CCRN/monthly_clim_regridded/"
+    dem.usask <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
+    wrfusask.bc <- rast(paste0(dir, paste(c("tmin", "tmax", "prec")[e], monthcodes[m], "regrid.nc", sep="_")))
+    wrfusask.bc <- crop(wrfusask.bc, prism.bc)
+    if(e == 3) wrfusask.bc <- wrfusask.bc*monthdays[m]
+    
+    # load the conus2 WRF data for the variable
+    dir <- "C:/Users/CMAHONY/OneDrive - Government of BC/Data/WRF_CONUSII/"
+    # dem.conus2 <- rast(paste(dir, "HGT/HGT_regrid.nc", sep=""))
+    wrfconus2.bc <- rast(paste0(dir, paste("conus2_climatology_", element, "_latlon.tif", sep="")))[[m]]
+    if(e != 3) wrfconus2.bc <- wrfconus2.bc - 273.15
+    wrfconus2.bc <- crop(wrfconus2.bc, prism.bc)
+    
+    #################################
+    ## Taylor plots
+    #################################
+    
+    # Plot PRISM against observations
+    taylor.diagram(ref = 0:5, model = 0:5, main = paste(month.name[m], element.names[e]),
+                   col = "black", pch = 1, cex = 1, normalize = TRUE, xlab="",
+                   sd.arcs = TRUE, grad.corr.lines = TRUE, pos.cor = TRUE)
+    
+    colScheme <- c("black", "dodgerblue", "yellow", "red")
+    
+    # Add a legend
+    legend("topright",
+           legend = datasets.names,
+           title="Datasets",
+           fill = colScheme,      # colored boxes
+           border = NULL,
+           bty = "n",
+           inset = c(0,-0.07))
+    
+    # second column: black shapes
+    legend("topright",
+           legend = regions,
+           title="Regions",
+           bg = "white",
+           pch = c(21,22,24),  # shapes
+           pt.cex = 1.5,
+           bty = "n",
+           inset = c(0.3,-0.07))   # shift to the left so they appear in second column
+    
+    for(i in 1:length(regions)){
+      studyarea <- get(paste("region", i, sep=""))  
+      caseStudy <- regions[i]
+      
+      ## DEM
+      
+      dem <- crop(dem.bc, studyarea)
+      prism <- crop(prism.bc, studyarea)
+      wrfclimatex<- project(wrfclimatex.bc, dem)
+      wrfusask<- project(wrfusask.bc, dem)
+      wrfconus2<- project(wrfconus2.bc, dem)
+      dem.wrf <- project(dem.wrfclimatex, dem)
+      
+      stn.vect <- vect(stn.info, geom = c("Long", "Lat"), crs = "EPSG:4326")
+      stn.crop <- crop(stn.vect, studyarea)
+      stn.values <- as.data.frame(stn.crop)[,which(names(stn.crop)==month.abb[m])]
+      stn.values <- if(e==3) log2(stn.values) else stn.values/10
+      
+      for(dataset in datasets){
+        d=which(datasets==dataset)
+        temp <- get(dataset)
+        # plot(temp)
+        # plot(stn.crop, add=T)
+        stn.temp <- as.vector(unlist(extract(temp, stn.crop)[2]))
+        stn.temp <- if(e==3) log2(stn.temp) else stn.temp
+        assign(paste("stn", dataset, elements[e], monthcodes[m], sep="."), stn.temp)
+        assign(paste("error", dataset, elements[e], monthcodes[m], sep="."), stn.temp - stn.values)
+        # Add points on the Taylor diagram
+        # taylor.diagram(ref = stn.values, model = stn.temp, add = TRUE,
+        #                col = colScheme[d], pch = c(16,15,17)[i], cex = 1.2, normalize = TRUE, pcex=1.5)
+        taylor.diagram.filled(ref = stn.values, model = stn.temp, add = TRUE,
+                              bg = colScheme[d], pch = c(21,22,24)[i], cex = 1.5, normalize = TRUE)
+      }
+      
+      # print(paste("region", i))
+    }
+    print(month.abb[m])
+  }
+  dev.off()
+  
+  print(element)
+}
 
 
 
