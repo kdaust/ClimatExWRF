@@ -1,0 +1,114 @@
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:24: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlon with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+/home/rpayne/venus_scripts/coarsen_FWI.py:34: SerializationWarning: saving variable rlat with floating point data as an integer dtype without any _FillValue to use for NaNs
+  ds_coarse.to_netcdf(out_file)
+Coarsening FWI...
+Coarsening BUI...

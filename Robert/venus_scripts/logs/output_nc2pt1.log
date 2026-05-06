@@ -1,0 +1,4 @@
+JOB STARTED AT Tue May  5 13:56:44 PDT 2026
+Running preprocess.py
+Running zarr_to_torch.py
+JOB ENDED AT Tue May  5 14:17:04 PDT 2026
