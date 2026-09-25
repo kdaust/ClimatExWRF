@@ -69,3 +69,28 @@ pairing, and failure cleanup using mocked NetCDF/WRF interfaces. On the WRF host
 compare one-worker and multi-worker runs on the same small real-file subset,
 including a month boundary, before running a full month. Check timestamps and
 the final CDO merge there as well.
+
+## Pressure-level output
+
+Each hourly file now includes `U_850`, `V_850`, `T_850`, `Q_850`, `Z_850`,
+and the corresponding variables at 700, 500 and 250 hPa (20 new variables).
+The existing CDO merges include these automatically in the final monthly file.
+
+- U/V: destaggered, grid-relative wind components in m s-1, matching the
+  existing `ua_b`/`va_b` convention (not rotated to east/north).
+- T: actual air temperature in K, not WRF perturbation potential temperature.
+- Q: QVAPOR water-vapour mixing ratio in kg kg-1, not specific humidity.
+- Z: geopotential height above mean sea level in decametres (`dm`).
+
+Interpolation uses `wrf.interplevel` with pressure in hPa and all four levels
+in one call per field. Full pressure, winds, temperature and height diagnostics
+are reused from the lowest-level calculations. Levels outside the resolved
+vertical range, including below terrain, are missing (`_FillValue`); there is
+no extrapolation. Each variable also records `pressure_level` and its units.
+
+Move aside `WRFOUT.OK` to regenerate hourly and monthly outputs with the new
+variables. Existing output files are not updated merely by replacing the script.
+
+Pressure-output unit tests (mocked WRF/NetCDF interfaces):
+`python -m unittest discover -s tests -p 'test_pressure_levels.py' -v`.
+A real WRF/CDO integration run is still needed on the processing host.

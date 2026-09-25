@@ -20,6 +20,8 @@ from compute_ipw_ivt import compute_ipw_ivt
 
 TIME_FORMAT = "%Y-%m-%d_%H:%M:%S"
 BUCKET_J = 1.0e9
+PRESSURE_LEVELS_HPA = (850, 700, 500, 250)
+PRESSURE_FILL_VALUE = np.float32(9.969209968386869e36)
 
 
 def discover_files(input_dir, domain):
@@ -72,8 +74,9 @@ def copy_time_coordinates(source, target):
 
 
 def write_to_ncfile(ncfile, in_array, var_string, var_dims, var_units,
-                    var_coordinates, var_description):
-    newvar = ncfile.createVariable(var_string, np.float32, var_dims)
+                    var_coordinates, var_description, fill_value=None):
+    kwargs = {} if fill_value is None else {"fill_value": fill_value}
+    newvar = ncfile.createVariable(var_string, np.float32, var_dims, **kwargs)
     newvar.units = var_units
     newvar.coordinates = var_coordinates
     newvar.description = var_description
@@ -81,6 +84,26 @@ def write_to_ncfile(ncfile, in_array, var_string, var_dims, var_units,
     if values.ndim == len(var_dims):
         values = values[0]
     newvar[0, ...] = values
+
+
+def write_pressure_levels(ncfile, field, pressure_hpa, prefix, units, description):
+    """Interpolate all requested levels together; preserve missing-data masks."""
+    levels = wrf.interplevel(
+        field, pressure_hpa, PRESSURE_LEVELS_HPA,
+        missing=float(PRESSURE_FILL_VALUE), squeeze=False, meta=False,
+    )
+    levels = np.ma.masked_invalid(np.ma.asarray(levels))
+    levels = np.ma.masked_equal(levels, PRESSURE_FILL_VALUE)
+    dims = ("Time", "south_north", "west_east")
+    for index, level in enumerate(PRESSURE_LEVELS_HPA):
+        name = "{}_{}".format(prefix, level)
+        write_to_ncfile(
+            ncfile, levels[index], name, dims, units, "XLONG XLAT XTIME",
+            "{} at {} hPa".format(description, level),
+            fill_value=PRESSURE_FILL_VALUE,
+        )
+        ncfile.variables[name].pressure_level = np.float32(level)
+        ncfile.variables[name].pressure_level_units = "hPa"
 
 
 def uncompressed_name(name):
@@ -177,29 +200,36 @@ def _compute_pair(cf, pf, ncfile):
     
     getvar_variables = ["ua","va","wa","temp","height","height_agl","pressure","rh","QVAPOR","slp"]
 
-    winds = {name: wrf.getvar(cf, name) for name in ("ua", "va")}
-    for wrfout_var_string in getvar_variables:
-        if wrfout_var_string == "slp":
-            units = "Pa"
-            wrfout_var_in = wrf.getvar(cf,wrfout_var_string,units="Pa")[:,:] 
-        elif wrfout_var_string in winds:
-            wrfout_var_in = winds[wrfout_var_string][0,:,:]
+    winds = {name: wrf.getvar(cf, name, timeidx=0) for name in ("ua", "va")}
+    pressure_hpa = wrf.getvar(cf, "pressure", timeidx=0)
+    pressure_fields = {
+        "ua": ("U", "m s-1", "Grid-relative U wind"),
+        "va": ("V", "m s-1", "Grid-relative V wind"),
+        "temp": ("T", "K", "Air temperature"),
+        "QVAPOR": ("Q", "kg kg-1", "Water vapour mixing ratio"),
+        "height": ("Z", "dm", "Geopotential height above mean sea level"),
+    }
+    for name in getvar_variables:
+        dims = ("Time", "south_north", "west_east")
+        if name == "slp":
+            diagnostic = wrf.getvar(cf, name, timeidx=0, units="Pa")
+            write_to_ncfile(ncfile, diagnostic, name, dims,
+                           diagnostic.units, diagnostic.coordinates, diagnostic.description)
+            continue
+        if name in winds:
+            diagnostic = winds[name]
+        elif name == "pressure":
+            diagnostic = pressure_hpa
         else:
-            wrfout_var_in = wrf.getvar(cf,wrfout_var_string)[0,:,:] # take lowest level
-
-        
-        dims = ("Time","south_north","west_east",)
-        
-       
-        if wrfout_var_string == "slp":
-            write_to_ncfile(ncfile,wrfout_var_in,wrfout_var_string,dims,
-                wrfout_var_in.units,wrfout_var_in.coordinates,wrfout_var_in.description)
-
-        else:             
-            write_to_ncfile(ncfile,wrfout_var_in,wrfout_var_string+"_b",dims,
-                wrfout_var_in.units,wrfout_var_in.coordinates,"lowest level "+wrfout_var_in.description)
-
-    
+            diagnostic = wrf.getvar(cf, name, timeidx=0)
+        write_to_ncfile(ncfile, diagnostic[0, :, :], name + "_b", dims,
+                       diagnostic.units, diagnostic.coordinates,
+                       "lowest level " + diagnostic.description)
+        if name in pressure_fields:
+            prefix, units, description = pressure_fields[name]
+            # WRF's default height is metres MSL; the requested Z output is dm.
+            field = diagnostic / 10.0 if name == "height" else diagnostic
+            write_pressure_levels(ncfile, field, pressure_hpa, prefix, units, description)
 
     # Extract required 3D fields (taking first time step)
     qv = cf.variables["QVAPOR"][0, :, :, :]  # Water vapor mixing ratio (kg/kg)
