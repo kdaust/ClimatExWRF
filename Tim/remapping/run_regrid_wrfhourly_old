@@ -1,0 +1,48 @@
+#!/bin/bash -l
+
+if [ $# -lt 2 ]; then
+    # TODO: print usage
+    echo "Usage: run_regrid_wrfhourly WPS_DIR METGRID_DIR PREV_METGRID_DIR"
+    echo "PREV_METGRID_DIR OPTIONAL"
+    exit 1
+fi
+
+WPS_DIR=$1
+METGRID_DIR=$2
+PREV_METGRID_DIR=$3
+
+
+module load cdo/2.0.5
+
+user=`whoami`
+ROOT_DIR=/scratch/${user}/ERA5_ibcs_2020-2022/ungrib
+rundir=${ROOT_DIR}/${WPS_DIR}/${METGRID_DIR}/WRF
+
+cd ${rundir} || exit 1
+
+if [ ! -e REMAPPED_nn ]; then mkdir REMAPPED_nn || exit 1; fi
+if [ ! -e REMAPPED_bic ]; then mkdir REMAPPED_bic || exit 1; fi
+if [ ! -e REMAPPED_bil ]; then mkdir REMAPPED_bil || exit 1; fi
+if [ ! -e REMAPPED_dis ]; then mkdir REMAPPED_dis || exit 1; fi
+
+REMAP_DIR=/home/${user}/climatex/remapping
+
+#doms=("d01" "d02" "d03")
+doms=("d01")
+
+
+for each_dom in ${doms[@]}; do
+    mkdir -p REMAPPED_nn/${each_dom}/wrfhourly
+    mkdir -p REMAPPED_bil/${each_dom}/wrfhourly
+    mkdir -p REMAPPED_bic/${each_dom}/wrfhourly
+    mkdir -p REMAPPED_dis/${each_dom}/wrfhourly
+
+    date
+    
+    time python3 /home/${user}/climatex/remapping/compute_hourly.py ${each_dom}
+
+done
+
+
+
+

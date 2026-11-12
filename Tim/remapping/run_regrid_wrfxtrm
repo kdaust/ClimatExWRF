@@ -1,0 +1,71 @@
+#!/bin/bash -l
+
+if [ $# -lt 2 ]; then
+    # TODO: print usage
+    echo "Usage: run_regrid_wrfxtrm WPS_DIR METGRID_DIR"
+    exit 1
+fi
+
+WPS_DIR=$1
+METGRID_DIR=$2
+
+module load cdo/2.0.5
+
+user=`whoami`
+ROOT_DIR=/scratch/${user}/ERA5_ibcs_2020-2022/ungrib
+rundir_root=${ROOT_DIR}/${WPS_DIR}/${METGRID_DIR}/WRF
+
+cd ${rundir_root} || exit 1
+
+if [ ! -e REMAPPED_nn ]; then mkdir REMAPPED_nn || exit 1; fi
+if [ ! -e REMAPPED_bic ]; then mkdir REMAPPED_bic || exit 1; fi
+if [ ! -e REMAPPED_bil ]; then mkdir REMAPPED_bil || exit 1; fi
+if [ ! -e REMAPPED_dis ]; then mkdir REMAPPED_dis || exit 1; fi
+
+REMAP_DIR=/home/${user}/climatex/remapping
+
+#doms=("d01" "d02" "d03")
+doms=("d01")
+
+remap_files=`ls ${REMAP_DIR}/*remap.txt`
+
+for each_dom in ${doms[@]}; do
+    mkdir REMAPPED_nn/${each_dom}/wrfxtrm
+    mkdir REMAPPED_bil/${each_dom}/wrfxtrm
+    mkdir REMAPPED_bic/${each_dom}/wrfxtrm
+    mkdir REMAPPED_dis/${each_dom}/wrfxtrm
+
+    date
+    
+    for wrfxtrm in `ls wrfxtrm_${each_dom}*00`; do
+        
+        echo $wrfxtrm
+
+        for each_remap_txt in ${remap_files}; do
+            stnname=`echo $each_remap_txt | rev |  cut -d'/' -f1 | rev |  cut -d'.' -f1`
+
+            cdo -s remap,${each_remap_txt},${REMAP_DIR}/${stnname}_nn_${each_dom}.nc ${wrfxtrm} REMAPPED_nn/${each_dom}/wrfxtrm/${wrfxtrm}.${stnname}.nn.nc &
+            sleep 0.25
+            cdo -s remap,${each_remap_txt},${REMAP_DIR}/${stnname}_bil_${each_dom}.nc ${wrfxtrm} REMAPPED_bil/${each_dom}/wrfxtrm/${wrfxtrm}.${stnname}.bil.nc &
+            sleep 0.25
+            cdo -s remap,${each_remap_txt},${REMAP_DIR}/${stnname}_bic_${each_dom}.nc ${wrfxtrm} REMAPPED_bic/${each_dom}/wrfxtrm/${wrfxtrm}.${stnname}.bic.nc &
+            sleep 0.25
+            cdo -s remap,${each_remap_txt},${REMAP_DIR}/${stnname}_dis_${each_dom}.nc ${wrfxtrm} REMAPPED_dis/${each_dom}/wrfxtrm/${wrfxtrm}.${stnname}.dis.nc &
+            sleep 0.25
+
+            wait
+        done
+    done
+
+    #comp=0
+    #tar -czvf REMAPPED_nn/${each_dom}.tar.gz REMAPPED_nn/${each_dom} || comp=1
+
+    #if [[ $comp == 1 ]]; then
+    #    echo "ERROR WITH COMPRESSING REMAPPED_nn/${each_dom}"
+    #else
+    #    rm -rfv REMAPPED_nn/${each_dom}
+    #fi
+
+done
+
+

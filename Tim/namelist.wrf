@@ -1,0 +1,162 @@
+ &time_control
+ run_days                            = 0,
+ run_hours                           = HHOURS,
+ run_minutes                         = 0,
+ run_seconds                         = 0,
+ start_year                          = SSYEAR, SSYEAR, SSYEAR, SSYEAR,
+ start_month                         = SSMONTH, SSMONTH, SSMONTH, SSMONTH,
+ start_day                           = SSDAY, SSDAY, SSDAY, SSDAY,
+ start_hour                          = SSHOUR1, SSHOUR2, SSHOUR3, SSHOUR4,
+ end_year                            = EEYEAR, EEYEAR, EEYEAR, EEYEAR,
+ end_month                           = EEMONTH, EEMONTH, EEMONTH, EEMONTH,
+ end_day                             = EEDAY, EEDAY, EEDAY, EEDAY, 
+ end_hour                            = EEHOUR, EEHOUR, EEHOUR, EEHOUR,
+ interval_seconds                    = 10800
+ input_from_file                     = .true.,.true.,.true.,.true.,
+ history_interval                    = 60,  60, 60, 60,
+ fine_input_stream                   = 0,   2,   2,  2,
+ frames_per_outfile                  = 1, 1, 1, 1,
+ restart                             = RESTART,
+ restart_interval                    = 360,
+ io_form_history                     = 2
+ io_form_restart                     = 2
+ io_form_input                       = 2
+ io_form_boundary                    = 2
+ io_form_auxinput2                   = 2
+ adjust_output_times = .true.,
+ output_diagnostics = 1,
+ auxinput4_inname = "wrflowinp_d<domain>",
+ auxinput4_interval = 180,180,180,180,
+ io_form_auxinput4 = 2,
+ auxhist3_outname = 'wrfxtrm_d<domain>_<date>',
+ auxhist3_interval = 60, 60, 60, 60,
+ frames_per_auxhist3 = 1, 1, 1, 1,
+ io_form_auxhist3 = 2,
+ iofields_filename = "uvic_d01.txt","uvic_d02.txt","uvic_d03.txt","uvic_d04.txt",
+ ignore_iofields_warning = .true.,
+ auxhist7_outname = "wrfuvic_d<domain>_<date>"
+ auxhist7_interval = 60, 60, 60, 60,
+ frames_per_auxhist7 = 1, 1, 1, 1,
+ io_form_auxhist7 = 2, 
+ auxhist22_outname="wrfuvic100m_d<domain>_<date>"
+ auxhist22_interval = 60, 60, 60, 60,
+ frames_per_auxhist22 = 1, 1, 1, 1,
+ io_form_auxhist22 = 2,
+ auxhist23_outname="wrfpress_d<domain>_<date>"
+ auxhist23_interval = 60, 60, 60, 60,
+ frames_per_auxhist23 = 1, 1, 1, 1,
+ io_form_auxhist23 = 2,
+ /
+
+ &domains
+ time_step                           = 18,
+ time_step_fract_num                 = 0,
+ time_step_fract_den                 = 1,
+ max_dom                             = 3,
+ e_we                                = 164, 370, 559, 301,
+ e_sn                                = 203, 466, 703, 361,
+ e_vert                              = 51,  51, 51, 51,
+ p_top_requested                     = 1000,
+ num_metgrid_levels                  = 38,
+ num_metgrid_soil_levels             = 4,
+ dx                                  = 27000,9000,3000,1000,
+ dy                                  = 27000,9000,3000,1000,
+ grid_id                             = 1,     2,    3,  4,
+ parent_id                           = 0,     1,    2,  3,
+ i_parent_start                      = 1,     20, 93, 201,
+ j_parent_start                      = 1,     24, 143, 93,
+ parent_grid_ratio                   = 1,     3, 3, 3,
+ parent_time_step_ratio              = 1,     3, 3, 3,
+ feedback                            = 1,
+ smooth_option                       = 0
+ use_adaptive_time_step = ADAPTIVE,
+ step_to_output_time = .true.,
+ max_step_increase_pct = 1, 3, 3, 3,
+ target_cfl = 1.0,1.1,1.2,1.35,
+ starting_time_step = 144,48,16,1,
+ max_time_step = 225,75,25,12,
+ min_time_step = 144,48,16,1,
+ max_ts_locs = 11,
+ max_ts_level = 10,
+ /
+
+ &physics
+ mp_physics                          = 6,     6, 6,  6,
+ cu_physics                          = 1,     1, 0, 0,
+ ra_lw_physics                       = 3,    3, 3, 3,
+ ra_sw_physics                       = 3,    3, 3, 3,
+ bl_pbl_physics                      = 1,    1, 1, 1,
+ topo_wind                           = 1,    1, 1, 1,
+ sf_sfclay_physics                   = 1,    1, 1, 1,
+ sf_surface_physics                  = 2,    2, 2, 2,
+ radt                                = 10,    10, 10, 10,
+ swint_opt                           = 1,
+ bldt                                = 0,     0, 0, 0,
+ cudt                                = 0,     0, 0, 0,
+ sst_update = 1,
+ usemonalb = .true.
+ tmn_update = 1,
+ sst_skin = 1,
+ bucket_mm = 100.0,
+ bucket_J = 1.e9,
+ icloud                              = 1,
+ num_land_cat                        = 21,
+ sf_urban_physics                    = 0,     0, 0, 0,
+ fractional_seaice                   = 1,
+ slope_rad = 0,0,1,
+ topo_shading= 0,0,1,
+ /
+
+ &fdda
+ grid_fdda = 0,0,0,0,
+ /
+
+ &dynamics
+ hybrid_opt                          = 2, 
+ w_damping                           = 1,
+ zadvect_implicit                    = 1,
+ w_crit_cfl                          = 1.2,
+ diff_opt                            = 1,       1,      1,      1,
+ km_opt                              = 4,       4,      4,      4,
+ damp_opt                            = 3,     
+ non_hydrostatic                     = .true., .true.,.true.,.true.,
+ moist_adv_opt                       = 1,      1,     1,     1,
+ scalar_adv_opt                      = 1,      1,     1,     1,
+ gwd_opt                             = 3,      3,     3,     3,
+ moist_adv_opt                       = 1,      1,     1,     1,
+ scalar_adv_opt                      = 1,      1,     1,     1,
+ use_theta_m                         = 1,
+ epssm = 0.5,0.5,0.5,0.5,
+ /
+
+ &bdy_control
+ spec_bdy_width                      = 10,
+ specified                           = .true.,.false.,.false.,.false.,
+ spec_zone                           = 1,
+ relax_zone                          = 9,
+ spec_exp                            = 0.33,
+ nested                              = .false.,.true.,.true.,.true.,
+ /
+
+ &diags
+ z_lev_diags = 1,
+ num_z_levels = 1,
+ z_levels = -100,
+ p_lev_diags = 1,
+ num_press_levels = 8,
+ press_levels = 85000,70000,50000,30000,25000,10000,5000,2000,
+ use_tot_or_hyd_p = 2,
+ /
+
+ &grib2
+ /
+
+&noah_mp
+opt_rad                             = 1,
+/
+
+
+ &namelist_quilt
+ nio_tasks_per_group = 0,
+ nio_groups = 1,
+ /
